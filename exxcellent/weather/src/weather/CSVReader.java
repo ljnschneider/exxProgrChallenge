@@ -8,10 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Vorgesehen zum Lesen einer CSV Datei, in deren ersten drei Spalten und in dieser Reihenfolge
- * der Tag, die maximale Temperatur des Tages und die minimale Temperatur des Tages stehen.
- * Stellt anhand dieser Werte die Tage fest, an denen die Temperaturdifferenz am geringsten war,
- * und gibt diese an.
+ * Vorgesehen zum Lesen einer CSV Datei, in deren erster Spalte der Name des Teams steht. Zusätzlich
+ * sollten in zwei frei auswählbaren Spalten dieser Datei die erzielten bzw. die zugelassenen Tore stehen.
+ * Stellt anhand dieser Werte die Teams fest, bei denen die Tordifferenz am geringsten war und gibt diese an.
  * 
  * @author Lennart Schneider
  * @see java.io.BufferedReader
@@ -19,41 +18,42 @@ import java.util.List;
 public class CSVReader implements Reader {
 	
 	/**
-	 * Liest eine CSV Datei ein und erstellt zu jeder Zeile einen Tag, der in einer Liste an Tagen
+	 * Liest eine CSV Datei ein und erstellt zu jeder Zeile ein Team, das in einer Liste an Teams
 	 * gespeichert wird. Diese Liste wird am Ende zurückgegeben.
 	 * 
 	 * @param path : Pfad der CSV
-	 * @return : Liefert eine ArrayList mit allen Tagen des Monats
+	 * @return : Liefert eine ArrayList mit allen Teams
 	 */
-	public List<Day> readthisfile(String path) {
+	public List<Team> readthisfile(String path, int column1, int column2) {
 		BufferedReader reader = null;
-		ArrayList<Day> days = new ArrayList<Day>();
+		ArrayList<Team> teams = new ArrayList<Team>();
 		try {
 			reader = new BufferedReader(new FileReader(path));
 			// In der ersten Zeile stehen nur Überschriften.
 			String line = reader.readLine();
-			// Für jede Zeile wird ein Tag eingefügt.
+			// Für jede Zeile wird ein Team eingefügt.
 			while ((line = reader.readLine()) != null) {
 				String[] words = line.split(",");
-				int dayNumber;
-				int maxTemp;
-				int minTemp;
-				//Auslesen der dayNumber, maxTemp und minTemp
+				String name;
+				int goalsScored;
+				int goalsAllowed;
+				//Auslesen von name, goalsScored und goalsAllowed
 				if (words.length < 3) {
 					throw new IllegalArgumentException("Die Datei muss mindestens 3 vollständig ausgefüllte Spalten haben.");
 				}
 				else {
 					//Falls Eingabefehler vorliegen: "try" bei der Berechnung der Differenz 
 					try {
-						dayNumber = Integer.parseInt(words[0]);
-						maxTemp = Integer.parseInt(words[1]);
-						minTemp = Integer.parseInt(words[2]);
+						name = words[0];
+						goalsScored = Integer.parseInt(words[column1]);
+						goalsAllowed = Integer.parseInt(words[column2]);
 					}
 					catch (NumberFormatException e){
-						throw new IllegalArgumentException("In der ersten, zweiten und dritten Spalte müssen Zahlen stehen");
+						throw new IllegalArgumentException("In der ersten Spalte muss ein Name "
+								+ "und den beiden angegebenen Spalten müssen Zahlen stehen");
 					}
 				}
-				days.add(new Day(dayNumber, maxTemp, minTemp));
+				teams.add(new Team(name, goalsScored, goalsAllowed));
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -68,29 +68,30 @@ public class CSVReader implements Reader {
 				}
 			}
 		}
-		return days;
+		return teams;
 	}
 	
 	/**
-	 * Wertet eine übergebene Liste mit Tagen aus und gibt eine Liste mit den Tagen zurück, an denen
-	 * die Temperaturdifferenz minimal ist {@code : ArrayList<Day> minTempSpreadDays}.
+	 * Wertet eine übergebene Liste mit Teams aus und gibt eine Liste mit den Teams zurück, bei denen
+	 * die Tordifferenz minimal ist.
 	 * 
 	 * @param path : Pfad der CSV
-	 * @return : Liefert eine ArrayList mit allen Tagen des Monats mit minimaler Temperaturdifferenz
+	 * @return : Liefert eine ArrayList mit allen Teams mit minimaler Tordifferenz
 	 */
-	public List<Day> calcDays (List<Day> days){
-		ArrayList<Day> minTempSpreadDays = new ArrayList<Day>();
-		int minTempSpread = Integer.MAX_VALUE;
-		for (Day day : days) {
-			int tempSpread = day.getMaxTemp() - day.getMinTemp();
-			if (tempSpread <= minTempSpread) {
-				if (tempSpread < minTempSpread) {
-					minTempSpread = tempSpread;
-					minTempSpreadDays = new ArrayList<Day>();
+	public List<Team> calcGoals (List<Team> teams){
+		ArrayList<Team> minGoalSpreadTeams = new ArrayList<Team>();
+		//max_value, damit der Wert gleich überschrieben wird.
+		int minGoalSpread = Integer.MAX_VALUE;
+		for (Team team : teams) {
+			int tempSpread = Math.abs(team.getMaxTemp() - team.getMinTemp());
+			if (tempSpread <= minGoalSpread) {
+				if (tempSpread < minGoalSpread) {
+					minGoalSpread = tempSpread;
+					minGoalSpreadTeams = new ArrayList<Team>();
 				}
-				minTempSpreadDays.add(day);
+				minGoalSpreadTeams.add(team);
 			}
 		}
-		return minTempSpreadDays;
+		return minGoalSpreadTeams;
 	}
 }
