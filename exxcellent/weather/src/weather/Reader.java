@@ -10,9 +10,20 @@ import java.util.List;
  *
  */
 public interface Reader {
+	
 	/**
+	 * Liest eine Datei ein und gibt eine Liste an Tagen eines Monats zurück.
+	 * 
 	 * @param path : Der Pfad der Datei
-	 * @return Liefert eine Liste mit den gesuchten Tagen zurück.
+	 * @return Liefert eine Liste mit den Tagen aus der Datei zurück zurück.
+	 */	
+	public List<Day> readthisfile(String path);
+	
+	/**
+	 * Berechnet zu einer gegebenen Liste an Tagen die Tage, an denen die Temperturdifferenz minimal ist. 
+	 * 
+	 * @param days : Erwartet eine Liste mit Tagen
+	 * @return Liefert eine Liste mit allen Tagen des Monats mit minimaler Temperaturdifferenz
 	 */
-	public List<Integer> readFile(String path);
+	public List<Day> calcDays(List<Day> days);
 }
